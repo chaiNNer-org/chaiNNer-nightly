@@ -41,7 +41,7 @@ jobs:
         with:
           node-version: 16
       - name: Install dependencies
-        run: npm ci --force
+        run: npm i --force
       - name: Build nightly release
         run: npm run make
       - name: Create info file
