@@ -52,15 +52,23 @@ jobs:
       #       token: ${{ github.token }}
       #       tag: nightly
       #       assets: "*.*"
+      - name: Set file name env vars
+        id: step_one
+        run: |
+          echo "ZIP=$(find . -iname *.zip)" >> $GITHUB_ENV
+          echo "DMG=$(find . -iname *.dmg)" >> $GITHUB_ENV
+          echo "DEB=$(find . -iname *.deb)" >> $GITHUB_ENV
+          echo "RPM=$(find . -iname *.rpm)" >> $GITHUB_ENV
+          echo "EXE=$(find . -iname *.exe)" >> $GITHUB_ENV
+          echo "NUPKG=$(find . -iname *.nupkg)" >> $GITHUB_ENV
       - name: Rename build assets
         run: |
-          cd ./chaiNNer/out/make/
-          mv **/*.zip ./chaiNNer/out/make/chaiNNer-${{ matrix.os }}-${{ github.event.repository.updated_at }}.zip
-          mv **/*.dmg ./chaiNNer/out/make/chaiNNer-${{ matrix.os }}-${{ github.event.repository.updated_at }}.dmg
-          mv **/*.deb ./chaiNNer/out/make/chaiNNer-${{ matrix.os }}-${{ github.event.repository.updated_at }}.deb
-          mv **/*.rpm ./chaiNNer/out/make/chaiNNer-${{ matrix.os }}-${{ github.event.repository.updated_at }}.rpm
-          mv **/*.exe ./chaiNNer/out/make/chaiNNer-${{ matrix.os }}-${{ github.event.repository.updated_at }}.exe
-          mv **/*.nupkg ./chaiNNer/out/make/chaiNNer-${{ matrix.os }}-${{ github.event.repository.updated_at }}.nupkg
+          mv ${{ env.ZIP }} ./chaiNNer/out/make/chaiNNer-${{ matrix.os }}-${{ github.event.repository.updated_at }}.zip
+          mv ${{ env.DMG }} ./chaiNNer/out/make/chaiNNer-${{ matrix.os }}-${{ github.event.repository.updated_at }}.dmg
+          mv ${{ env.DEB }} ./chaiNNer/out/make/chaiNNer-${{ matrix.os }}-${{ github.event.repository.updated_at }}.deb
+          mv ${{ env.RPM }} ./chaiNNer/out/make/chaiNNer-${{ matrix.os }}-${{ github.event.repository.updated_at }}.rpm
+          mv ${{ env.EXE }} ./chaiNNer/out/make/chaiNNer-${{ matrix.os }}-${{ github.event.repository.updated_at }}.exe
+          mv ${{ env.NUPKG }} ./chaiNNer/out/make/chaiNNer-${{ matrix.os }}-${{ github.event.repository.updated_at }}.nupkg
       - name: Update release description
         id: update_release
         uses: tubone24/update_release@v1.0
