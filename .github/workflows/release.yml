@@ -54,12 +54,12 @@ jobs:
       #       assets: "*.*"
       - name: Rename build assets
         run: |
-          mv ./chaiNNer/out/make/**/*.zip ./chaiNNer/out/make/chaiNNer-${{ matrix.os }}-${{ github.event.repository.updated_at }}.zip
-          mv ./chaiNNer/out/make/**/*.dmg ./chaiNNer/out/make/chaiNNer-${{ matrix.os }}-${{ github.event.repository.updated_at }}.dmg
-          mv ./chaiNNer/out/make/**/*.deb ./chaiNNer/out/make/chaiNNer-${{ matrix.os }}-${{ github.event.repository.updated_at }}.deb
-          mv ./chaiNNer/out/make/**/*.rpm ./chaiNNer/out/make/chaiNNer-${{ matrix.os }}-${{ github.event.repository.updated_at }}.rpm
-          mv ./chaiNNer/out/make/**/*.exe ./chaiNNer/out/make/chaiNNer-${{ matrix.os }}-${{ github.event.repository.updated_at }}.exe
-          mv ./chaiNNer/out/make/**/*.nupkg ./chaiNNer/out/make/chaiNNer-${{ matrix.os }}-${{ github.event.repository.updated_at }}.nupkg
+          mv **/*.zip ./chaiNNer/out/make/chaiNNer-${{ matrix.os }}-${{ github.event.repository.updated_at }}.zip
+          mv **/*.dmg ./chaiNNer/out/make/chaiNNer-${{ matrix.os }}-${{ github.event.repository.updated_at }}.dmg
+          mv **/*.deb ./chaiNNer/out/make/chaiNNer-${{ matrix.os }}-${{ github.event.repository.updated_at }}.deb
+          mv **/*.rpm ./chaiNNer/out/make/chaiNNer-${{ matrix.os }}-${{ github.event.repository.updated_at }}.rpm
+          mv **/*.exe ./chaiNNer/out/make/chaiNNer-${{ matrix.os }}-${{ github.event.repository.updated_at }}.exe
+          mv **/*.nupkg ./chaiNNer/out/make/chaiNNer-${{ matrix.os }}-${{ github.event.repository.updated_at }}.nupkg
       - name: Update release description
         id: update_release
         uses: tubone24/update_release@v1.0
