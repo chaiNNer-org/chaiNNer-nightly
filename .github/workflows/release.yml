@@ -61,14 +61,24 @@ jobs:
           echo "RPM=$(find ./chaiNNer/out/make/ -iname *.rpm)" >> $GITHUB_ENV
           echo "EXE=$(find ./chaiNNer/out/make/ -iname *.exe)" >> $GITHUB_ENV
           echo "NUPKG=$(find ./chaiNNer/out/make/ -iname *.nupkg)" >> $GITHUB_ENV
-      - name: Rename build assets
-        run: |
-          mv ${{ env.ZIP }} ./chaiNNer/out/make/chaiNNer-${{ matrix.os }}-${{ github.event.repository.updated_at }}.zip
-          mv ${{ env.DMG }} ./chaiNNer/out/make/chaiNNer-${{ matrix.os }}-${{ github.event.repository.updated_at }}.dmg
-          mv ${{ env.DEB }} ./chaiNNer/out/make/chaiNNer-${{ matrix.os }}-${{ github.event.repository.updated_at }}.deb
-          mv ${{ env.RPM }} ./chaiNNer/out/make/chaiNNer-${{ matrix.os }}-${{ github.event.repository.updated_at }}.rpm
-          mv ${{ env.EXE }} ./chaiNNer/out/make/chaiNNer-${{ matrix.os }}-${{ github.event.repository.updated_at }}.exe
-          mv ${{ env.NUPKG }} ./chaiNNer/out/make/chaiNNer-${{ matrix.os }}-${{ github.event.repository.updated_at }}.nupkg
+      - name: Rename zip assets
+        if: ${{ env.ZIP }}
+        run: mv ${{ env.ZIP }} ./chaiNNer/out/make/chaiNNer-${{ matrix.os }}-${{ github.event.repository.updated_at }}.zip
+      - name: Rename dmg assets
+        if: ${{ env.DMG }}
+        run: mv ${{ env.DMG }} ./chaiNNer/out/make/chaiNNer-${{ matrix.os }}-${{ github.event.repository.updated_at }}.dmg
+      - name: Rename dmg assets
+        if: ${{ env.DEB }}
+        run: mv ${{ env.DEB }} ./chaiNNer/out/make/chaiNNer-${{ matrix.os }}-${{ github.event.repository.updated_at }}.deb
+      - name: Rename dmg assets
+        if: ${{ env.RPM }}
+        run: mv ${{ env.RPM }} ./chaiNNer/out/make/chaiNNer-${{ matrix.os }}-${{ github.event.repository.updated_at }}.rpm
+      - name: Rename dmg assets
+        if: ${{ env.EXE }}
+        run: mv ${{ env.EXE }} ./chaiNNer/out/make/chaiNNer-${{ matrix.os }}-${{ github.event.repository.updated_at }}.exe
+      - name: Rename dmg assets
+        if: ${{ env.NUPKG }}
+        run: rm ${{ env.NUPKG }}
       - name: Update release description
         id: update_release
         uses: tubone24/update_release@v1.0
