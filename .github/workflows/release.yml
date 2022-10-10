@@ -43,8 +43,7 @@ jobs:
       - name: Install necessary FlatPak tools
         if: ${{ matrix.os == 'ubuntu-latest' }}
         run: |
-          sudo apt update && sudo apt install flatpak flatpak-builder elfutils \
-          flatpak --user install gnome org.freedesktop.Sdk/x86_64/1.4
+          sudo apt update && sudo apt install flatpak flatpak-builder elfutils
       - name: Build nightly release
         run: cd ./chaiNNer && npm run make
       - name: Create info file
