@@ -97,7 +97,7 @@ jobs:
           release: "Nightly builds"
           tag: "nightly"
           replace: false
-          files: ./chaiNNer/out/make/**
+          files: false
           message: "Built on ${{ steps.current-time.outputs.readableTime }}"
           body: "Built on ${{ steps.current-time.outputs.readableTime }}"
           prerelease: true
