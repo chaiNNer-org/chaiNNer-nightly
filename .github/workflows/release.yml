@@ -55,12 +55,12 @@ jobs:
       - name: Set file name env vars
         id: step_one
         run: |
-          echo "ZIP='$(find ./chaiNNer/out/make/ -iname *.zip)'" >> $GITHUB_ENV
-          echo "DMG='$(find ./chaiNNer/out/make/ -iname *.dmg)'" >> $GITHUB_ENV
-          echo "DEB='$(find ./chaiNNer/out/make/ -iname *.deb)'" >> $GITHUB_ENV
-          echo "RPM='$(find ./chaiNNer/out/make/ -iname *.rpm)'" >> $GITHUB_ENV
-          echo "EXE='$(find ./chaiNNer/out/make/ -iname *.exe)'" >> $GITHUB_ENV
-          echo "NUPKG='$(find ./chaiNNer/out/make/ -iname *.nupkg)'" >> $GITHUB_ENV
+          echo "ZIP=$(find ./chaiNNer/out/make/ -iname *.zip)" >> $GITHUB_ENV
+          echo "DMG=$(find ./chaiNNer/out/make/ -iname *.dmg)" >> $GITHUB_ENV
+          echo "DEB=$(find ./chaiNNer/out/make/ -iname *.deb)" >> $GITHUB_ENV
+          echo "RPM=$(find ./chaiNNer/out/make/ -iname *.rpm)" >> $GITHUB_ENV
+          echo "EXE=$(find ./chaiNNer/out/make/ -iname *.exe)" >> $GITHUB_ENV
+          echo "NUPKG=$(find ./chaiNNer/out/make/ -iname *.nupkg)" >> $GITHUB_ENV
       - name: Rename build assets
         run: |
           mv ${{ env.ZIP }} ./chaiNNer/out/make/chaiNNer-${{ matrix.os }}-${{ github.event.repository.updated_at }}.zip
