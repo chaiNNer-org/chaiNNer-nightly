@@ -46,14 +46,15 @@ jobs:
           sudo apt update && sudo apt install flatpak flatpak-builder elfutils
       - name: Build nightly release
         run: cd ./chaiNNer && npm run make
-      - name: Create info file
-        run: |
-          echo -e "ref: $GITHUB_REF \ncommit: $GITHUB_SHA\nbuild: $(date +"%Y-%m-%dT%H:%M:%SZ")" \
-          > ./chaiNNer/out/make/info.txt
-      - name: Update nightly release
-        uses: eine/tip@master
+      - name: Upload to release
+        uses: svenstaro/upload-release-action@v2
         with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file_glob: true
+          file: ./chaiNNer/out/make/*.*
+          asset_name: mything
           tag: nightly
-          rm: true
-          token: ${{ secrets.GITHUB_TOKEN }}
-          files: ./chaiNNer/out/make/*.*
+          overwrite: true
+          body: Built on ${{ github.event.repository.updated_at}}
+          release_name: chaiNNer Nightly ${{ github.event.repository.updated_at}}
+          prerelease: true
