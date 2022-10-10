@@ -35,7 +35,7 @@ jobs:
         uses: josStorer/get-current-time@v2.0.1
         id: current-time
         with:
-          format: YYYYMMDD-HH
+          format: YYYY.MM.DD
       - name: Checkout main
         uses: actions/checkout@v2
       - name: Checkout submodules
@@ -63,19 +63,19 @@ jobs:
           echo "NUPKG=$(find ./chaiNNer/out/make/ -iname *.nupkg)" >> $GITHUB_ENV
       - name: Rename zip assets
         if: ${{ env.ZIP }}
-        run: mv ${{ env.ZIP }} ./chaiNNer/out/make/chaiNNer-${{ matrix.os }}-nightly.zip
+        run: mv ${{ env.ZIP }} ./chaiNNer/out/make/chaiNNer-${{ matrix.os }}-nightly-${{ steps.current-time.outputs.formattedTime }}.zip
       - name: Rename dmg assets
         if: ${{ env.DMG }}
-        run: mv ${{ env.DMG }} ./chaiNNer/out/make/chaiNNer-${{ matrix.os }}-nightly.dmg
+        run: mv ${{ env.DMG }} ./chaiNNer/out/make/chaiNNer-${{ matrix.os }}-nightly-${{ steps.current-time.outputs.formattedTime }}.dmg
       - name: Rename deb assets
         if: ${{ env.DEB }}
-        run: mv ${{ env.DEB }} ./chaiNNer/out/make/chaiNNer-${{ matrix.os }}-nightly.deb
+        run: mv ${{ env.DEB }} ./chaiNNer/out/make/chaiNNer-${{ matrix.os }}-nightly-${{ steps.current-time.outputs.formattedTime }}.deb
       - name: Rename rpm assets
         if: ${{ env.RPM }}
-        run: mv ${{ env.RPM }} ./chaiNNer/out/make/chaiNNer-${{ matrix.os }}-nightly.rpm
+        run: mv ${{ env.RPM }} ./chaiNNer/out/make/chaiNNer-${{ matrix.os }}-nightly-${{ steps.current-time.outputs.formattedTime }}.rpm
       - name: Rename exe assets
         if: ${{ env.EXE }}
-        run: mv ${{ env.EXE }} ./chaiNNer/out/make/chaiNNer-${{ matrix.os }}-nightly.exe
+        run: mv ${{ env.EXE }} ./chaiNNer/out/make/chaiNNer-${{ matrix.os }}-nightly-${{ steps.current-time.outputs.formattedTime }}.exe
       - name: Delete nupkg assets
         if: ${{ env.NUPKG }}
         run: rm ${{ env.NUPKG }}
@@ -87,6 +87,6 @@ jobs:
           file: ./chaiNNer/out/make/**
           tag: ${{ steps.current-time.outputs.formattedTime }}
           overwrite: true
-          body: Built on ${{ steps.current-time.outputs.readableTime }}
-          release_name: Nightly builds from ${{ steps.current-time.outputs.readableTime }}
+          body: Built on ${{ steps.current-time.outputs.formattedTime }}
+          release_name: Nightly builds from ${{ steps.current-time.outputs.formattedTime }}
           prerelease: true
