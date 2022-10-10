@@ -108,6 +108,6 @@ jobs:
           file: ./chaiNNer/out/make/**
           tag: ${{ steps.current-time.outputs.formattedTime }}
           overwrite: true
-          body: Built on ${{ steps.current-time.outputs.formattedTime }}
+          body: Built on ${{ steps.current-time.outputs.formattedTime }} \n\n${{ needs.setup.outputs.COMMITS }}
           release_name: Nightly builds from ${{ steps.current-time.outputs.formattedTime }}
           prerelease: true
