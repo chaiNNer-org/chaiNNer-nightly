@@ -31,12 +31,11 @@ jobs:
         os: [macos-latest, ubuntu-latest, windows-latest]
 
     steps:
-      - name: Delete old release assets
-        uses: mknejp/delete-release-assets@v1
+      - name: Get current time
+        uses: josStorer/get-current-time@v2.0.1
+        id: current-time
         with:
-          token: ${{ github.token }}
-          tag: nightly
-          assets: "*.*"
+          format: YYYYMMDD-HH
       - name: Checkout main
         uses: actions/checkout@v2
       - name: Checkout submodules
@@ -63,19 +62,19 @@ jobs:
           echo "NUPKG=$(find ./chaiNNer/out/make/ -iname *.nupkg)" >> $GITHUB_ENV
       - name: Rename zip assets
         if: ${{ env.ZIP }}
-        run: mv ${{ env.ZIP }} ./chaiNNer/out/make/chaiNNer-${{ matrix.os }}-${{ github.event.repository.updated_at }}.zip
+        run: mv ${{ env.ZIP }} ./chaiNNer/out/make/chaiNNer-${{ matrix.os }}-nightly.zip
       - name: Rename dmg assets
         if: ${{ env.DMG }}
-        run: mv ${{ env.DMG }} ./chaiNNer/out/make/chaiNNer-${{ matrix.os }}-${{ github.event.repository.updated_at }}.dmg
+        run: mv ${{ env.DMG }} ./chaiNNer/out/make/chaiNNer-${{ matrix.os }}-nightly.dmg
       - name: Rename deb assets
         if: ${{ env.DEB }}
-        run: mv ${{ env.DEB }} ./chaiNNer/out/make/chaiNNer-${{ matrix.os }}-${{ github.event.repository.updated_at }}.deb
+        run: mv ${{ env.DEB }} ./chaiNNer/out/make/chaiNNer-${{ matrix.os }}-nightly.deb
       - name: Rename rpm assets
         if: ${{ env.RPM }}
-        run: mv ${{ env.RPM }} ./chaiNNer/out/make/chaiNNer-${{ matrix.os }}-${{ github.event.repository.updated_at }}.rpm
+        run: mv ${{ env.RPM }} ./chaiNNer/out/make/chaiNNer-${{ matrix.os }}-nightly.rpm
       - name: Rename exe assets
         if: ${{ env.EXE }}
-        run: mv ${{ env.EXE }} ./chaiNNer/out/make/chaiNNer-${{ matrix.os }}-${{ github.event.repository.updated_at }}.exe
+        run: mv ${{ env.EXE }} ./chaiNNer/out/make/chaiNNer-${{ matrix.os }}-nightly.exe
       - name: Delete nupkg assets
         if: ${{ env.NUPKG }}
         run: rm ${{ env.NUPKG }}
@@ -87,6 +86,6 @@ jobs:
           file: ./chaiNNer/out/make/**
           tag: nightly
           overwrite: true
-          body: Built on ${{ github.event.repository.updated_at }}
-          release_name: chaiNNer Nightly ${{ github.event.repository.updated_at }}
+          body: Built on ${{ steps.current-time.outputs.readableTime }}
+          release_name: chaiNNer Nightly ${{ steps.current-time.outputs.readableTime }}
           prerelease: true
