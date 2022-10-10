@@ -59,7 +59,7 @@ jobs:
         run: '"SHELL=bash" >> $GITHUB_ENV'
       - name: Set file name env vars
         id: step_one
-        shell: ${{ env.SHELL }}
+        shell: "${{ env.SHELL }}"
         run: |
           echo "ZIP=$(find ./chaiNNer/out/make/ -iname *.zip)" >> $GITHUB_ENV
           echo "DMG=$(find ./chaiNNer/out/make/ -iname *.dmg)" >> $GITHUB_ENV
