@@ -80,7 +80,7 @@ jobs:
         if: ${{ env.NUPKG }}
         run: rm ${{ env.NUPKG }}
       - name: Update release description
-        id: update_release
+        id: nightly
         uses: tubone24/update_release@v1.0
         env:
           GITHUB_TOKEN: ${{ github.token }}
