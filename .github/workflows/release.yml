@@ -67,16 +67,16 @@ jobs:
       - name: Rename dmg assets
         if: ${{ env.DMG }}
         run: mv ${{ env.DMG }} ./chaiNNer/out/make/chaiNNer-${{ matrix.os }}-${{ github.event.repository.updated_at }}.dmg
-      - name: Rename dmg assets
+      - name: Rename deb assets
         if: ${{ env.DEB }}
         run: mv ${{ env.DEB }} ./chaiNNer/out/make/chaiNNer-${{ matrix.os }}-${{ github.event.repository.updated_at }}.deb
-      - name: Rename dmg assets
+      - name: Rename rpm assets
         if: ${{ env.RPM }}
         run: mv ${{ env.RPM }} ./chaiNNer/out/make/chaiNNer-${{ matrix.os }}-${{ github.event.repository.updated_at }}.rpm
-      - name: Rename dmg assets
+      - name: Rename exe assets
         if: ${{ env.EXE }}
         run: mv ${{ env.EXE }} ./chaiNNer/out/make/chaiNNer-${{ matrix.os }}-${{ github.event.repository.updated_at }}.exe
-      - name: Rename dmg assets
+      - name: Delete nupkg assets
         if: ${{ env.NUPKG }}
         run: rm ${{ env.NUPKG }}
       - name: Update release description
