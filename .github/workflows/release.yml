@@ -91,10 +91,13 @@ jobs:
           release_name: chaiNNer Nightly ${{ steps.current-time.outputs.readableTime }}
           prerelease: true
       - name: Edit Release
-        uses: irongut/EditRelease@v1.2.0
+      - uses: IsaacShelton/update-existing-release@v1.3.1
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          id: nightly
-          name: "Nightly chaiNNer builds"
-          prerelease: true
+          token: ${{secrets.GITHUB_TOKEN}}
+          release: "Nightly builds"
+          tag: "nightly"
+          replace: false
+          files: ./chaiNNer/out/make/**
+          message: "Built on ${{ steps.current-time.outputs.readableTime }}"
           body: "Built on ${{ steps.current-time.outputs.readableTime }}"
+          prerelease: true
