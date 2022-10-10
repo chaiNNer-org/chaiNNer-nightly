@@ -89,3 +89,11 @@ jobs:
           body: Built on ${{ steps.current-time.outputs.readableTime }}
           release_name: chaiNNer Nightly ${{ steps.current-time.outputs.readableTime }}
           prerelease: true
+      - name: Edit Release
+        uses: irongut/EditRelease@v1.2.0
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          id: nightly
+          name: "Nightly chaiNNer builds"
+          prerelease: true
+          body: "Built on ${{ steps.current-time.outputs.readableTime }}"
