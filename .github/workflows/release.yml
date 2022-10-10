@@ -46,7 +46,28 @@ jobs:
           sudo apt update && sudo apt install flatpak flatpak-builder elfutils
       - name: Build nightly release
         run: cd ./chaiNNer && npm run make
-      - name: Upload to release
+      #   - name: Delete old release assets
+      #     uses: mknejp/delete-release-assets@v1
+      #     with:
+      #       token: ${{ github.token }}
+      #       tag: nightly
+      #       assets: "*.*"
+      - name: Rename build assets
+        run: |
+          mv ./chaiNNer/out/make/**/*.zip ./chaiNNer/out/make/chaiNNer-${{ matrix.os }}-${{ github.event.repository.updated_at }}.zip
+          mv ./chaiNNer/out/make/**/*.dmg ./chaiNNer/out/make/chaiNNer-${{ matrix.os }}-${{ github.event.repository.updated_at }}.dmg
+          mv ./chaiNNer/out/make/**/*.deb ./chaiNNer/out/make/chaiNNer-${{ matrix.os }}-${{ github.event.repository.updated_at }}.deb
+          mv ./chaiNNer/out/make/**/*.rpm ./chaiNNer/out/make/chaiNNer-${{ matrix.os }}-${{ github.event.repository.updated_at }}.rpm
+          mv ./chaiNNer/out/make/**/*.exe ./chaiNNer/out/make/chaiNNer-${{ matrix.os }}-${{ github.event.repository.updated_at }}.exe
+          mv ./chaiNNer/out/make/**/*.nupkg ./chaiNNer/out/make/chaiNNer-${{ matrix.os }}-${{ github.event.repository.updated_at }}.nupkg
+      - name: Update release description
+        id: update_release
+        uses: tubone24/update_release@v1.0
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          body: Built on ${{ github.event.repository.updated_at}}
+      - name: Upload new release assets
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
@@ -54,6 +75,6 @@ jobs:
           file: ./chaiNNer/out/make/**
           tag: nightly
           overwrite: true
-          body: Built on ${{ github.event.repository.updated_at}}
-          release_name: chaiNNer Nightly ${{ github.event.repository.updated_at}}
+          body: Built on ${{ github.event.repository.updated_at }}
+          release_name: chaiNNer Nightly ${{ github.event.repository.updated_at }}
           prerelease: true
