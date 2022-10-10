@@ -31,6 +31,12 @@ jobs:
         os: [macos-latest, ubuntu-latest, windows-latest]
 
     steps:
+      - name: Delete old release assets
+        uses: mknejp/delete-release-assets@v1
+        with:
+          token: ${{ github.token }}
+          tag: nightly
+          assets: "*.*"
       - name: Checkout main
         uses: actions/checkout@v2
       - name: Checkout submodules
@@ -73,12 +79,6 @@ jobs:
       - name: Delete nupkg assets
         if: ${{ env.NUPKG }}
         run: rm ${{ env.NUPKG }}
-      - name: Delete old release assets
-        uses: mknejp/delete-release-assets@v1
-        with:
-          token: ${{ github.token }}
-          tag: nightly
-          assets: "*.*"
       - name: Upload new release assets
         uses: svenstaro/upload-release-action@v2
         with:
