@@ -46,12 +46,6 @@ jobs:
           sudo apt update && sudo apt install flatpak flatpak-builder elfutils
       - name: Build nightly release
         run: cd ./chaiNNer && npm run make
-      #   - name: Delete old release assets
-      #     uses: mknejp/delete-release-assets@v1
-      #     with:
-      #       token: ${{ github.token }}
-      #       tag: nightly
-      #       assets: "*.*"
       - name: Set file name env vars
         id: step_one
         run: |
@@ -79,13 +73,12 @@ jobs:
       - name: Delete nupkg assets
         if: ${{ env.NUPKG }}
         run: rm ${{ env.NUPKG }}
-      - name: Update release description
-        id: nightly
-        uses: tubone24/update_release@v1.0
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
+      - name: Delete old release assets
+        uses: mknejp/delete-release-assets@v1
         with:
-          body: Built on ${{ github.event.repository.updated_at}}
+          token: ${{ github.token }}
+          tag: nightly
+          assets: "*.*"
       - name: Upload new release assets
         uses: svenstaro/upload-release-action@v2
         with:
