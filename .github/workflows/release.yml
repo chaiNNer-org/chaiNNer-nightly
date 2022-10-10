@@ -54,6 +54,7 @@ jobs:
       #       assets: "*.*"
       - name: Rename build assets
         run: |
+          cd ./chaiNNer/out/make/
           mv **/*.zip ./chaiNNer/out/make/chaiNNer-${{ matrix.os }}-${{ github.event.repository.updated_at }}.zip
           mv **/*.dmg ./chaiNNer/out/make/chaiNNer-${{ matrix.os }}-${{ github.event.repository.updated_at }}.dmg
           mv **/*.deb ./chaiNNer/out/make/chaiNNer-${{ matrix.os }}-${{ github.event.repository.updated_at }}.deb
