@@ -85,19 +85,8 @@ jobs:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file_glob: true
           file: ./chaiNNer/out/make/**
-          tag: nightly
+          tag: ${{ steps.current-time.outputs.formattedTime }}
           overwrite: true
           body: Built on ${{ steps.current-time.outputs.readableTime }}
-          release_name: chaiNNer Nightly ${{ steps.current-time.outputs.readableTime }}
-          prerelease: true
-      - name: Edit Release
-        uses: IsaacShelton/update-existing-release@v1.3.1
-        with:
-          token: ${{secrets.GITHUB_TOKEN}}
-          release: "Nightly builds"
-          tag: "nightly"
-          replace: false
-          files: false
-          message: "Built on ${{ steps.current-time.outputs.readableTime }}"
-          body: "Built on ${{ steps.current-time.outputs.readableTime }}"
+          release_name: Nightly builds from ${{ steps.current-time.outputs.readableTime }}
           prerelease: true
