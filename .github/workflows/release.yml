@@ -75,7 +75,7 @@ jobs:
         run: mv ${{ env.RPM }} ./chaiNNer/out/make/chaiNNer-${{ matrix.os }}-nightly-${{ steps.current-time.outputs.formattedTime }}.rpm
       - name: Rename exe assets
         if: ${{ env.EXE }}
-        run: mv ${{ env.EXE }} ./chaiNNer/out/make/chaiNNer-${{ matrix.os }}-nightly-${{ steps.current-time.outputs.formattedTime }}.exe
+        run: mv "${{ env.EXE }}" "./chaiNNer/out/make/chaiNNer-${{ matrix.os }}-nightly-${{ steps.current-time.outputs.formattedTime }}.exe"
       - name: Delete nupkg assets
         if: ${{ env.NUPKG }}
         run: rm ${{ env.NUPKG }}
