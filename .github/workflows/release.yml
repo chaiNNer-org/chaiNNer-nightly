@@ -51,8 +51,15 @@ jobs:
           sudo apt update && sudo apt install flatpak flatpak-builder elfutils
       - name: Build nightly release
         run: cd ./chaiNNer && npm run make
+      - name: I should have made these separate
+        if: ${{ matrix.os == 'windows-latest' }}
+        run: '"SHELL=pwsh" >> $GITHUB_ENV'
+      - name: I should have made these separate 2
+        if: "!${{ matrix.os == 'windows-latest' }}"
+        run: '"SHELL=bash" >> $GITHUB_ENV'
       - name: Set file name env vars
         id: step_one
+        shell: ${{ env.SHELL }}
         run: |
           echo "ZIP=$(find ./chaiNNer/out/make/ -iname *.zip)" >> $GITHUB_ENV
           echo "DMG=$(find ./chaiNNer/out/make/ -iname *.dmg)" >> $GITHUB_ENV
