@@ -41,15 +41,15 @@ jobs:
       - name: Install dependencies
         run: cd ./chaiNNer && npm ci --force
       - name: Build nightly release
-        run: npm run make
+        run: cd ./chaiNNer && npm run make
       - name: Create info file
         run: |
           echo -e "ref: $GITHUB_REF \ncommit: $GITHUB_SHA\nbuild: $(date +"%Y-%m-%dT%H:%M:%SZ")" \
-          > ./out/make/info.txt
+          > ./chaiNNer/out/make/info.txt
       - name: Update nightly release
         uses: eine/tip@master
         with:
           tag: nightly
           rm: true
           token: ${{ secrets.GITHUB_TOKEN }}
-          files: ./out/make/*.*
+          files: ./chaiNNer/out/make/*.*
