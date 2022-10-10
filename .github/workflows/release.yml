@@ -51,8 +51,7 @@ jobs:
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file_glob: true
-          file: ./chaiNNer/out/make/*.*
-          asset_name: mything
+          file: ./chaiNNer/out/make/**
           tag: nightly
           overwrite: true
           body: Built on ${{ github.event.repository.updated_at}}
