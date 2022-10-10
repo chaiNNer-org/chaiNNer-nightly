@@ -23,7 +23,20 @@ on:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
+  setup:
+    permissions:
+      contents: none
+    runs-on: ubuntu-latest
+    outputs:
+      COMMITS: ${{ steps.get_commits.outputs.COMMITS }}
+    steps:
+      - name: Get commits last 24 hours
+        id: get_commits
+        run: cd ./chaiNNer && echo ::set-output name=COMMITS::$(git rev-list --no-merges HEAD  --not $(git rev-list -n1 --before="24 hours" --first-parent HEAD))
+
   release:
+    needs: [setup]
+    if: ${{ COMMITS }}
     runs-on: ${{ matrix.os }}
 
     strategy:
@@ -38,6 +51,8 @@ jobs:
           format: YYYY.MM.DD
       - name: Checkout main
         uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
       - name: Checkout submodules
         run: git submodule update --init --recursive --remote
       - uses: actions/setup-node@master
