@@ -41,7 +41,7 @@ jobs:
       - name: Install dependencies
         run: cd ./chaiNNer && npm ci --force
       - name: Install necessary FlatPak tools
-        if: ${{ matrix.ox == 'ubuntu-latest' }}
+        if: ${{ matrix.os == 'ubuntu-latest' }}
         run: sudo apt update && sudo apt install flatpak flatpak-builder elfutils
       - name: Build nightly release
         run: cd ./chaiNNer && npm run make
