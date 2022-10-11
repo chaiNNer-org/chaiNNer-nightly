@@ -110,7 +110,7 @@ jobs:
         id: read_release
         shell: bash
         run: |
-          r=$(cat history.txt)                       # <--- Read history.txt (Provide correct path as per your repo)
+          r=$(cat ./chaiNNer/history.txt)                       # <--- Read history.txt (Provide correct path as per your repo)
           r="${r//'%'/'%25'}"                               # Multiline escape sequences for %
           r="${r//$'\n'/'%0A'}"                             # Multiline escape sequences for '\n'
           r="${r//$'\r'/'%0D'}"                             # Multiline escape sequences for '\r'
