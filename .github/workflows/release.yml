@@ -105,16 +105,16 @@ jobs:
         run: |
           cd ./chaiNNer
           echo "Built on ${{ steps.current-time.outputs.formattedTime }}" > history.txt
-          git rev-list --no-merges HEAD  --not $(git rev-list -n1 --before="24 hours" --first-parent HEAD) --pretty=oneline >> history.txt
+          git log --no-merges HEAD  --not $(git rev-list -n1 --before="24 hours" --first-parent HEAD) --pretty=format:'%h -%d %s (%cr) <%an>' >> history.txt
       - name: Read release.md and use it as a body of new release
         id: read_release
         shell: bash
         run: |
-          r=$(cat ./chaiNNer/history.txt)                       # <--- Read history.txt (Provide correct path as per your repo)
+          r=$(cat ./chaiNNer/history.txt)
           r="${r//'%'/'%25'}"                               # Multiline escape sequences for %
           r="${r//$'\n'/'%0A'}"                             # Multiline escape sequences for '\n'
           r="${r//$'\r'/'%0D'}"                             # Multiline escape sequences for '\r'
-          echo "::set-output name=RELEASE_BODY::$r"         # <--- Set environment variable
+          echo "::set-output name=RELEASE_BODY::$r"
       - name: Upload new release assets
         uses: svenstaro/upload-release-action@v2
         with:
@@ -124,6 +124,6 @@ jobs:
           tag: ${{ steps.current-time.outputs.formattedTime }}
           overwrite: true
           body: |
-            ${{ steps.read_release.outputs.RELEASE_BODY }}  # <--- Use environment variables that was created earlier
+            ${{ steps.read_release.outputs.RELEASE_BODY }}
           release_name: Nightly builds from ${{ steps.current-time.outputs.formattedTime }}
           prerelease: true
