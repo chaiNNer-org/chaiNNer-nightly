@@ -28,7 +28,7 @@ jobs:
       contents: none
     runs-on: ubuntu-latest
     outputs:
-      COMMITS: ${{ env.COMMITS }}
+      COMMITS: ${{ steps.get_commits.outputs.COMMITS }}
     steps:
       - name: Checkout main
         uses: actions/checkout@v2
@@ -38,11 +38,11 @@ jobs:
         run: git submodule update --init --recursive --remote
       - name: Get commits last 24 hours
         id: get_commits
-        run: cd ./chaiNNer && echo "COMMITS=$(git rev-list --no-merges HEAD  --not $(git rev-list -n1 --before="24 hours" --first-parent HEAD) --pretty=short)" >> $GITHUB_ENV
+        run: cd ./chaiNNer && echo ::set-output name=COMMITS::$(git rev-list --no-merges HEAD  --not $(git rev-list -n1 --before="24 hours" --first-parent HEAD))
 
   release:
     needs: [setup]
-    if: ${{ env.COMMITS }}
+    if: ${{ needs.setup.outputs.COMMITS }}
     runs-on: ${{ matrix.os }}
 
     strategy:
@@ -61,6 +61,9 @@ jobs:
           fetch-depth: 0
       - name: Checkout submodules
         run: git submodule update --init --recursive --remote
+      - name: Get commits last 24 hours
+        id: get_commits
+        run: cd ./chaiNNer && echo "COMMITS=$(git rev-list --no-merges HEAD  --not $(git rev-list -n1 --before="24 hours" --first-parent HEAD) --pretty=short)" >> $GITHUB_ENV
       - uses: actions/setup-node@master
         with:
           node-version: 16
