@@ -65,7 +65,7 @@ jobs:
         id: get_commits
         run: |
           cd ./chaiNNer
-          echo "COMMITS<<EOF"
+          echo 'COMMITS<<EOF'
           git rev-list --no-merges HEAD  --not $(git rev-list -n1 --before="24 hours" --first-parent HEAD) --pretty=oneline >> $GITHUB_ENV
           echo 'EOF' >> $GITHUB_ENV
       - uses: actions/setup-node@master
