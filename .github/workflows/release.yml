@@ -105,7 +105,7 @@ jobs:
         run: |
           cd ./chaiNNer
           echo "Built on ${{ steps.current-time.outputs.formattedTime }}" > history.txt
-          git log --no-merges HEAD  --not $(git rev-list -n1 --before="24 hours" --first-parent HEAD) --pretty=format:'%h -%d %s (%cr) <%an>' >> history.txt
+          git log --no-merges HEAD  --not $(git rev-list -n1 --before="24 hours" --first-parent HEAD) --pretty=format:'%h -%s (%cr) <%an>' >> history.txt
       - name: Read release.md and use it as a body of new release
         id: read_release
         shell: bash
