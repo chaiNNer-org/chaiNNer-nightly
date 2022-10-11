@@ -61,13 +61,6 @@ jobs:
           fetch-depth: 0
       - name: Checkout submodules
         run: git submodule update --init --recursive --remote
-      - name: Get commits last 24 hours
-        shell: bash
-        id: get_commits
-        run: |
-          cd ./chaiNNer
-          body=$(git rev-list --no-merges HEAD  --not $(git rev-list -n1 --before="24 hours" --first-parent HEAD) --pretty=oneline)
-          echo "COMMITS=$body" >> $GITHUB_ENV
       - uses: actions/setup-node@master
         with:
           node-version: 16
@@ -117,6 +110,6 @@ jobs:
           overwrite: true
           body: |
             Built on ${{ steps.current-time.outputs.formattedTime }} 
-            ${{ env.COMMITS }}
+            $(cd ./chaiNNer git rev-list --no-merges HEAD  --not $(git rev-list -n1 --before="24 hours" --first-parent HEAD) --pretty=oneline)
           release_name: Nightly builds from ${{ steps.current-time.outputs.formattedTime }}
           prerelease: true
