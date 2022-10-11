@@ -63,7 +63,7 @@ jobs:
         run: git submodule update --init --recursive --remote
       - name: Get commits last 24 hours
         id: get_commits
-        run: cd ./chaiNNer && echo "COMMITS=$(git rev-list --no-merges HEAD  --not $(git rev-list -n1 --before="24 hours" --first-parent HEAD) --pretty=short)" >> $GITHUB_ENV
+        run: cd ./chaiNNer && echo "COMMITS=$(git rev-list --no-merges HEAD  --not $(git rev-list -n1 --before="24 hours" --first-parent HEAD) --pretty=oneline)" >> $GITHUB_ENV
       - uses: actions/setup-node@master
         with:
           node-version: 16
