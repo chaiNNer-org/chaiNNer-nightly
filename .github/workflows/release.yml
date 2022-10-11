@@ -110,6 +110,6 @@ jobs:
           overwrite: true
           body: |
             Built on ${{ steps.current-time.outputs.formattedTime }} 
-            $(cd ./chaiNNer git rev-list --no-merges HEAD  --not $(git rev-list -n1 --before="24 hours" --first-parent HEAD) --pretty=oneline)
+            ${{ echo $(cd ./chaiNNer && git rev-list --no-merges HEAD  --not $(git rev-list -n1 --before="24 hours" --first-parent HEAD) --pretty=oneline) }}
           release_name: Nightly builds from ${{ steps.current-time.outputs.formattedTime }}
           prerelease: true
