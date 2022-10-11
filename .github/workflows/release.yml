@@ -38,7 +38,7 @@ jobs:
         run: git submodule update --init --recursive --remote
       - name: Get commits last 24 hours
         id: get_commits
-        run: cd ./chaiNNer && echo ::set-output name=COMMITS::$(git rev-list --no-merges HEAD  --not $(git rev-list -n1 --before="24 hours" --first-parent HEAD))
+        run: cd ./chaiNNer && echo ::set-output name=COMMITS::$(git rev-list --no-merges HEAD  --not $(git rev-list -n1 --before="24 hours" --first-parent HEAD) --pretty=short)
 
   release:
     needs: [setup]
@@ -108,6 +108,8 @@ jobs:
           file: ./chaiNNer/out/make/**
           tag: ${{ steps.current-time.outputs.formattedTime }}
           overwrite: true
-          body: Built on ${{ steps.current-time.outputs.formattedTime }} \n\n${{ needs.setup.outputs.COMMITS }}
+          body: |
+            Built on ${{ steps.current-time.outputs.formattedTime }} 
+            ${{ needs.setup.outputs.COMMITS }}
           release_name: Nightly builds from ${{ steps.current-time.outputs.formattedTime }}
           prerelease: true
