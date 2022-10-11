@@ -62,12 +62,15 @@ jobs:
       - name: Checkout submodules
         run: git submodule update --init --recursive --remote
       - name: Get commits last 24 hours
+        shell: bash
         id: get_commits
         run: |
           cd ./chaiNNer
-          echo 'COMMITS<<EOF'
-          echo "$(echo $(git rev-list --no-merges HEAD  --not $(git rev-list -n1 --before="24 hours" --first-parent HEAD) --pretty=oneline})//'\#'/'')" >> $GITHUB_ENV
-          echo 'EOF' >> $GITHUB_ENV
+          body=$(git rev-list --no-merges HEAD  --not $(git rev-list -n1 --before="24 hours" --first-parent HEAD) --pretty=oneline)
+          body="${body//'%'/'%25'}"
+          body="${body//$'\n'/'%0A'}"
+          body="${body//$'\r'/'%0D'}"
+          echo "COMMITS=$body" >> $GITHUB_ENV
       - uses: actions/setup-node@master
         with:
           node-version: 16
