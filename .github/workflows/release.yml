@@ -126,4 +126,4 @@ jobs:
           body: |
             ${{ steps.read_release.outputs.RELEASE_BODY }}
           release_name: Nightly builds from ${{ steps.current-time.outputs.formattedTime }}
-          prerelease: true
+          prerelease: false
