@@ -73,6 +73,7 @@ jobs:
       - name: Increase patch version
         shell: bash
         run: |
+          cd ./chaiNNer
           npm version patch
           echo "PKG_VERSION=$(npm pkg get version --workspaces=false | tr -d \")-nightly.${{ steps.current-time.outputs.formattedTime }}" >> $GITHUB_ENV
           npm version ${{ env.PKG_VERSION }}
