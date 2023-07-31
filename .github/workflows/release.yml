@@ -54,7 +54,7 @@ jobs:
         uses: josStorer/get-current-time@v2.0.1
         id: current-time
         with:
-          format: YYYY.MM.DD
+          format: YYYY-MM-DD
       - name: Checkout main
         uses: actions/checkout@v2
         with:
@@ -70,6 +70,12 @@ jobs:
         if: ${{ matrix.os == 'ubuntu-latest' }}
         run: |
           sudo apt update && sudo apt install flatpak flatpak-builder elfutils
+      - name: Increase patch version
+        shell: bash
+        run: |
+          npm version patch
+          echo "PKG_VERSION=$(npm pkg get version --workspaces=false | tr -d \")-nightly.${{ steps.current-time.outputs.formattedTime }}" >> $GITHUB_ENV
+          npm version ${{ env.PKG_VERSION }}
       - name: Build nightly release
         run: cd ./chaiNNer && npm run make
       - name: Set file name env vars
@@ -84,19 +90,19 @@ jobs:
           echo "NUPKG=$(find ./chaiNNer/out/make/ -iname *.nupkg)" >> $GITHUB_ENV
       - name: Rename zip assets
         if: ${{ env.ZIP }}
-        run: mv ${{ env.ZIP }} ./chaiNNer/out/make/chaiNNer-${{ matrix.os }}-nightly-${{ steps.current-time.outputs.formattedTime }}.zip
+        run: mv ${{ env.ZIP }} ./chaiNNer/out/make/chaiNNer-${{ matrix.os }}-nightly.${{ steps.current-time.outputs.formattedTime }}.zip
       - name: Rename dmg assets
         if: ${{ env.DMG }}
-        run: mv ${{ env.DMG }} ./chaiNNer/out/make/chaiNNer-${{ matrix.os }}-nightly-${{ steps.current-time.outputs.formattedTime }}.dmg
+        run: mv ${{ env.DMG }} ./chaiNNer/out/make/chaiNNer-${{ matrix.os }}-nightly.${{ steps.current-time.outputs.formattedTime }}.dmg
       - name: Rename deb assets
         if: ${{ env.DEB }}
-        run: mv ${{ env.DEB }} ./chaiNNer/out/make/chaiNNer-${{ matrix.os }}-nightly-${{ steps.current-time.outputs.formattedTime }}.deb
+        run: mv ${{ env.DEB }} ./chaiNNer/out/make/chaiNNer-${{ matrix.os }}-nightly.${{ steps.current-time.outputs.formattedTime }}.deb
       - name: Rename rpm assets
         if: ${{ env.RPM }}
-        run: mv ${{ env.RPM }} ./chaiNNer/out/make/chaiNNer-${{ matrix.os }}-nightly-${{ steps.current-time.outputs.formattedTime }}.rpm
+        run: mv ${{ env.RPM }} ./chaiNNer/out/make/chaiNNer-${{ matrix.os }}-nightly.${{ steps.current-time.outputs.formattedTime }}.rpm
       - name: Rename exe assets
         if: ${{ env.EXE }}
-        run: mv "${{ env.EXE }}" "./chaiNNer/out/make/chaiNNer-${{ matrix.os }}-nightly-${{ steps.current-time.outputs.formattedTime }}.exe"
+        run: mv "${{ env.EXE }}" "./chaiNNer/out/make/chaiNNer-${{ matrix.os }}-nightly.${{ steps.current-time.outputs.formattedTime }}.exe"
       - name: Delete nupkg assets
         if: ${{ env.NUPKG }}
         run: rm ${{ env.NUPKG }}
