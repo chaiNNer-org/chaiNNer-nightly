@@ -71,6 +71,7 @@ jobs:
         run: |
           sudo apt update && sudo apt install flatpak flatpak-builder elfutils
       - name: Increase patch version
+        shell: bash
         run: |
           npm version patch
           echo "PKG_VERSION=$(npm pkg get version --workspaces=false | tr -d \")-nightly.${{ steps.current-time.outputs.formattedTime }}" >> $GITHUB_ENV
