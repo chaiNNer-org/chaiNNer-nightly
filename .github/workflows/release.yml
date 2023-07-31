@@ -74,9 +74,9 @@ jobs:
         shell: bash
         run: |
           cd ./chaiNNer
-          npm version patch
+          npm version patch --no-git-tag-version
           echo "PKG_VERSION=$(npm pkg get version --workspaces=false | tr -d \")-nightly.${{ steps.current-time.outputs.formattedTime }}" >> $GITHUB_ENV
-          npm version ${{ env.PKG_VERSION }}
+          npm version ${{ env.PKG_VERSION }} --no-git-tag-version
       - name: Build nightly release
         run: cd ./chaiNNer && npm run make
       - name: Set file name env vars
