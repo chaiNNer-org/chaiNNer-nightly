@@ -78,7 +78,7 @@ jobs:
           PKG_VERSION=$(npm pkg get version --workspaces=false | tr -d \")-nightly.${{ steps.current-time.outputs.formattedTime }}
           npm version $PKG_VERSION --no-git-tag-version
       - name: Build nightly release
-        run: cd ./chaiNNer && npm run make
+        run: cd ./chaiNNer && npm run make -- --no-sign
       - name: Set file name env vars
         id: step_one
         shell: bash
