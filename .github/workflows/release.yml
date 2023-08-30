@@ -77,8 +77,34 @@ jobs:
           npm version patch --no-git-tag-version
           PKG_VERSION=$(npm pkg get version --workspaces=false | tr -d \")-nightly.${{ steps.current-time.outputs.formattedTime }}
           npm version $PKG_VERSION --no-git-tag-version
+      - name: macOS certificate
+        if: matrix.os == 'macos-latest'
+        env:
+            APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
+            APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+        run: |
+            KEY_CHAIN=build.keychain
+            CERTIFICATE_P12=certificate.p12
+            echo $APPLE_CERTIFICATE | base64 --decode > $CERTIFICATE_P12
+            security create-keychain -p actions $KEY_CHAIN
+            security default-keychain -s $KEY_CHAIN
+            security unlock-keychain -p actions $KEY_CHAIN
+            security import $CERTIFICATE_P12 -k $KEY_CHAIN -P $APPLE_CERTIFICATE_PASSWORD -T /usr/bin/codesign;
+            security set-key-partition-list -S apple-tool:,apple: -s -k actions $KEY_CHAIN
+            rm -fr *.p12
       - name: Build nightly release
-        run: cd ./chaiNNer && npm run make -- --no-sign
+        env:
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        shell: bash
+        run: |
+          cd ./chaiNNer
+          if [[ "${{ matrix.os }}" != "macos-latest" ]]; then
+              npm run make
+          else
+              npm run make -- --arch=universal
+          fi
       - name: Set file name env vars
         id: step_one
         shell: bash
