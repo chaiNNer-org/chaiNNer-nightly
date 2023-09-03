@@ -47,7 +47,7 @@ jobs:
 
     strategy:
       matrix:
-        os: [macos-latest, ubuntu-latest, windows-latest]
+        os: [macos-13, ubuntu-latest, windows-latest]
 
     steps:
       - name: Get current time
@@ -78,7 +78,7 @@ jobs:
           PKG_VERSION=$(npm pkg get version --workspaces=false | tr -d \")-nightly.${{ steps.current-time.outputs.formattedTime }}
           npm version $PKG_VERSION --no-git-tag-version
       - name: macOS certificate
-        if: matrix.os == 'macos-latest'
+        if: matrix.os == 'macos-13'
         env:
             APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
             APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
@@ -97,10 +97,11 @@ jobs:
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          APPLE_SIGNING_ID: ${{ secrets.APPLE_SIGNING_ID }}
         shell: bash
         run: |
           cd ./chaiNNer
-          if [[ "${{ matrix.os }}" != "macos-latest" ]]; then
+          if [[ "${{ matrix.os }}" != "macos-13" ]]; then
               npm run make
           else
               npm run make -- --arch=universal
