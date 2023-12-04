@@ -64,6 +64,9 @@ jobs:
       - uses: actions/setup-node@master
         with:
           node-version: 16
+      - name: install setuptools (macos)
+        if: matrix.os == 'macos-13'
+        run: python3 -m pip install setuptools
       - name: Install dependencies
         run: cd ./chaiNNer && npm ci --force
       - name: Install necessary FlatPak tools
