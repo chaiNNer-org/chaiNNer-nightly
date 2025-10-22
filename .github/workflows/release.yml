@@ -38,10 +38,55 @@ jobs:
         run: git submodule update --init --recursive --remote
       - name: Get commits last 24 hours
         id: get_commits
-        run: cd ./chaiNNer && echo ::set-output name=COMMITS::$(git rev-list --no-merges HEAD  --not $(git rev-list -n1 --before="24 hours" --first-parent HEAD))
+        run: cd ./chaiNNer && echo "COMMITS=$(git rev-list --no-merges HEAD  --not $(git rev-list -n1 --before=\"24 hours\" --first-parent HEAD))" >> $GITHUB_OUTPUT
+
+  create-release:
+    needs: [setup]
+    if: ${{ needs.setup.outputs.COMMITS }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    outputs:
+      TAG: ${{ steps.current-time.outputs.formattedTime }}
+    steps:
+      - name: Get current time
+        uses: josStorer/get-current-time@v2.0.1
+        id: current-time
+        with:
+          format: YYYY-MM-DD
+      - name: Checkout main
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Checkout submodules
+        run: git submodule update --init --recursive --remote
+      - name: Get commit history (past 24 hours)
+        id: commit_history
+        run: |
+          cd ./chaiNNer
+          echo "Built on ${{ steps.current-time.outputs.formattedTime }}" > history.txt
+          git log --no-merges HEAD  --not $(git rev-list -n1 --before="24 hours" --first-parent HEAD) --pretty=format:"[%h](https://github.com/chaiNNer-org/chaiNNer/commit/%H) - %s (%cr) <%an>" >> history.txt
+      - name: Read release.md and use it as a body of new release
+        id: read_release
+        shell: bash
+        run: |
+          r=$(cat ./chaiNNer/history.txt)
+          r="${r//'%'/'%25'}"                               # Multiline escape sequences for %
+          r="${r//$'\n'/'%0A'}"                             # Multiline escape sequences for '\n'
+          r="${r//$'\r'/'%0D'}"                             # Multiline escape sequences for '\r'
+          echo "RELEASE_BODY=$r" >> $GITHUB_OUTPUT
+      - name: Create release
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          tag: ${{ steps.current-time.outputs.formattedTime }}
+          release_name: Nightly builds from ${{ steps.current-time.outputs.formattedTime }}
+          body: |
+            ${{ steps.read_release.outputs.RELEASE_BODY }}
+          prerelease: false
 
   release:
-    needs: [setup]
+    needs: [setup, create-release]
     if: ${{ needs.setup.outputs.COMMITS }}
     runs-on: ${{ matrix.os }}
 
@@ -50,11 +95,6 @@ jobs:
         os: [macos-13, ubuntu-latest, windows-latest]
 
     steps:
-      - name: Get current time
-        uses: josStorer/get-current-time@v2.0.1
-        id: current-time
-        with:
-          format: YYYY-MM-DD
       - name: Checkout main
         uses: actions/checkout@v2
         with:
@@ -78,7 +118,7 @@ jobs:
         run: |
           cd ./chaiNNer
           npm version patch --no-git-tag-version
-          PKG_VERSION=$(npm pkg get version --workspaces=false | tr -d \")-nightly.${{ steps.current-time.outputs.formattedTime }}
+          PKG_VERSION=$(npm pkg get version --workspaces=false | tr -d \")-nightly.${{ needs.create-release.outputs.TAG }}
           npm version $PKG_VERSION --no-git-tag-version
       - name: macOS certificate
         if: matrix.os == 'macos-13'
@@ -121,46 +161,27 @@ jobs:
           echo "NUPKG=$(find ./chaiNNer/out/make/ -iname *.nupkg)" >> $GITHUB_ENV
       - name: Rename zip assets
         if: ${{ env.ZIP }}
-        run: mv ${{ env.ZIP }} ./chaiNNer/out/make/chaiNNer-${{ matrix.os }}-nightly.${{ steps.current-time.outputs.formattedTime }}.zip
+        run: mv ${{ env.ZIP }} ./chaiNNer/out/make/chaiNNer-${{ matrix.os }}-nightly.${{ needs.create-release.outputs.TAG }}.zip
       - name: Rename dmg assets
         if: ${{ env.DMG }}
-        run: mv ${{ env.DMG }} ./chaiNNer/out/make/chaiNNer-${{ matrix.os }}-nightly.${{ steps.current-time.outputs.formattedTime }}.dmg
+        run: mv ${{ env.DMG }} ./chaiNNer/out/make/chaiNNer-${{ matrix.os }}-nightly.${{ needs.create-release.outputs.TAG }}.dmg
       - name: Rename deb assets
         if: ${{ env.DEB }}
-        run: mv ${{ env.DEB }} ./chaiNNer/out/make/chaiNNer-${{ matrix.os }}-nightly.${{ steps.current-time.outputs.formattedTime }}.deb
+        run: mv ${{ env.DEB }} ./chaiNNer/out/make/chaiNNer-${{ matrix.os }}-nightly.${{ needs.create-release.outputs.TAG }}.deb
       - name: Rename rpm assets
         if: ${{ env.RPM }}
-        run: mv ${{ env.RPM }} ./chaiNNer/out/make/chaiNNer-${{ matrix.os }}-nightly.${{ steps.current-time.outputs.formattedTime }}.rpm
+        run: mv ${{ env.RPM }} ./chaiNNer/out/make/chaiNNer-${{ matrix.os }}-nightly.${{ needs.create-release.outputs.TAG }}.rpm
       - name: Rename exe assets
         if: ${{ env.EXE }}
-        run: mv "${{ env.EXE }}" "./chaiNNer/out/make/chaiNNer-${{ matrix.os }}-nightly.${{ steps.current-time.outputs.formattedTime }}.exe"
+        run: mv "${{ env.EXE }}" "./chaiNNer/out/make/chaiNNer-${{ matrix.os }}-nightly.${{ needs.create-release.outputs.TAG }}.exe"
       - name: Delete nupkg assets
         if: ${{ env.NUPKG }}
         run: rm ${{ env.NUPKG }}
-      - name: Get commit history (past 24 hours)
-        id: commit_history
-        run: |
-          cd ./chaiNNer
-          echo "Built on ${{ steps.current-time.outputs.formattedTime }}" > history.txt
-          git log --no-merges HEAD  --not $(git rev-list -n1 --before="24 hours" --first-parent HEAD) --pretty=format:"[%h](https://github.com/chaiNNer-org/chaiNNer/commit/%H) - %s (%cr) <%an>" >> history.txt
-      - name: Read release.md and use it as a body of new release
-        id: read_release
-        shell: bash
-        run: |
-          r=$(cat ./chaiNNer/history.txt)
-          r="${r//'%'/'%25'}"                               # Multiline escape sequences for %
-          r="${r//$'\n'/'%0A'}"                             # Multiline escape sequences for '\n'
-          r="${r//$'\r'/'%0D'}"                             # Multiline escape sequences for '\r'
-          echo "::set-output name=RELEASE_BODY::$r"
       - name: Upload new release assets
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file_glob: true
           file: ./chaiNNer/out/make/**
-          tag: ${{ steps.current-time.outputs.formattedTime }}
+          tag: ${{ needs.create-release.outputs.TAG }}
           overwrite: true
-          body: |
-            ${{ steps.read_release.outputs.RELEASE_BODY }}
-          release_name: Nightly builds from ${{ steps.current-time.outputs.formattedTime }}
-          prerelease: false
