@@ -38,7 +38,7 @@ jobs:
         run: git submodule update --init --recursive --remote
       - name: Get commits last 24 hours
         id: get_commits
-        run: cd ./chaiNNer && echo ::set-output name=COMMITS::$(git rev-list --no-merges HEAD  --not $(git rev-list -n1 --before="24 hours" --first-parent HEAD))
+        run: cd ./chaiNNer && echo "COMMITS=$(git rev-list --no-merges HEAD  --not $(git rev-list -n1 --before=\"24 hours\" --first-parent HEAD))" >> $GITHUB_OUTPUT
 
   create-release:
     needs: [setup]
