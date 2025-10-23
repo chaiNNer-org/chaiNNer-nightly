@@ -83,13 +83,15 @@ jobs:
           r="${r//$'\r'/'%0D'}"                             # Multiline escape sequences for '\r'
           echo "RELEASE_BODY=$r" >> $GITHUB_OUTPUT
       - name: Create release
-        uses: svenstaro/upload-release-action@v2
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          tag: ${{ steps.current-time.outputs.formattedTime }}
+          tag_name: ${{ steps.current-time.outputs.formattedTime }}
           release_name: Nightly builds from ${{ steps.current-time.outputs.formattedTime }}
           body: |
             ${{ steps.read_release.outputs.RELEASE_BODY }}
+          draft: false
           prerelease: false
 
   release:
