@@ -38,7 +38,7 @@ jobs:
         run: git submodule update --init --recursive --remote
       - name: Get commits last 24 hours
         id: get_commits
-        run: cd ./chaiNNer && echo "COMMITS=$(git rev-list --no-merges HEAD  --not $(git rev-list -n1 --before=\"24 hours\" --first-parent HEAD))" >> $GITHUB_OUTPUT
+        run: cd ./chaiNNer && echo "COMMITS=$(git rev-list --no-merges HEAD  --not $(git rev-list -n1 --before='24 hours' --first-parent HEAD))" >> $GITHUB_OUTPUT
 
   create-release:
     needs: [setup]
@@ -65,7 +65,7 @@ jobs:
         run: |
           cd ./chaiNNer
           echo "Built on ${{ steps.current-time.outputs.formattedTime }}" > history.txt
-          git log --no-merges HEAD  --not $(git rev-list -n1 --before="24 hours" --first-parent HEAD) --pretty=format:"[%h](https://github.com/chaiNNer-org/chaiNNer/commit/%H) - %s (%cr) <%an>" >> history.txt
+          git log --no-merges HEAD  --not $(git rev-list -n1 --before='24 hours' --first-parent HEAD) --pretty=format:"[%h](https://github.com/chaiNNer-org/chaiNNer/commit/%H) - %s (%cr) <%an>" >> history.txt
       - name: Read release.md and use it as a body of new release
         id: read_release
         shell: bash
@@ -123,18 +123,18 @@ jobs:
       - name: macOS certificate
         if: matrix.os == 'macos-13'
         env:
-            APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
-            APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+          APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
+          APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
         run: |
-            KEY_CHAIN=build.keychain
-            CERTIFICATE_P12=certificate.p12
-            echo $APPLE_CERTIFICATE | base64 --decode > $CERTIFICATE_P12
-            security create-keychain -p actions $KEY_CHAIN
-            security default-keychain -s $KEY_CHAIN
-            security unlock-keychain -p actions $KEY_CHAIN
-            security import $CERTIFICATE_P12 -k $KEY_CHAIN -P $APPLE_CERTIFICATE_PASSWORD -T /usr/bin/codesign;
-            security set-key-partition-list -S apple-tool:,apple: -s -k actions $KEY_CHAIN
-            rm -fr *.p12
+          KEY_CHAIN=build.keychain
+          CERTIFICATE_P12=certificate.p12
+          echo $APPLE_CERTIFICATE | base64 --decode > $CERTIFICATE_P12
+          security create-keychain -p actions $KEY_CHAIN
+          security default-keychain -s $KEY_CHAIN
+          security unlock-keychain -p actions $KEY_CHAIN
+          security import $CERTIFICATE_P12 -k $KEY_CHAIN -P $APPLE_CERTIFICATE_PASSWORD -T /usr/bin/codesign;
+          security set-key-partition-list -S apple-tool:,apple: -s -k actions $KEY_CHAIN
+          rm -fr *.p12
       - name: Build nightly release
         env:
           APPLE_ID: ${{ secrets.APPLE_ID }}
