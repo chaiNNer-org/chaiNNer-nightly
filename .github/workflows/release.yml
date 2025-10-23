@@ -38,7 +38,14 @@ jobs:
         run: git submodule update --init --recursive --remote
       - name: Get commits last 24 hours
         id: get_commits
-        run: cd ./chaiNNer && echo "COMMITS=$(git rev-list --no-merges HEAD  --not $(git rev-list -n1 --before='24 hours' --first-parent HEAD))" >> $GITHUB_OUTPUT
+        run: |
+          cd ./chaiNNer
+          COMMITS=$(git rev-list --no-merges HEAD --not $(git rev-list -n1 --before='24 hours' --first-parent HEAD) 2>/dev/null || echo "")
+          if [ -n "$COMMITS" ]; then
+            echo "COMMITS=true" >> $GITHUB_OUTPUT
+          else
+            echo "COMMITS=false" >> $GITHUB_OUTPUT
+          fi
 
   create-release:
     needs: [setup]
