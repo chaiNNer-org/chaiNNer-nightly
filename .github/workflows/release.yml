@@ -81,7 +81,7 @@ jobs:
           {
             echo "RELEASE_BODY<<EOF"
             cat ./chaiNNer/history.txt
-            echo "EOF"
+            echo EOF
           } >> $GITHUB_OUTPUT
       - name: Create release
         uses: actions/create-release@v1
