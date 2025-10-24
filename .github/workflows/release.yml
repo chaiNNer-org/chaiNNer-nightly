@@ -78,9 +78,10 @@ jobs:
         shell: bash
         run: |
           # Use heredoc to properly handle multiline content
-          echo "RELEASE_BODY<<EOF" >> $GITHUB_OUTPUT
+          delimiter="ghadelimiter_$(uuidgen)"
+          echo "RELEASE_BODY<<${delimiter}" >> $GITHUB_OUTPUT
           cat ./chaiNNer/history.txt >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
+          echo "${delimiter}" >> $GITHUB_OUTPUT
       - name: Create release
         uses: actions/create-release@v1
         env:
