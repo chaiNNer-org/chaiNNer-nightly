@@ -77,11 +77,11 @@ jobs:
         id: read_release
         shell: bash
         run: |
-          # Use heredoc to properly handle multiline content
-          delimiter="ghadelimiter_$(uuidgen)"
-          echo "RELEASE_BODY<<${delimiter}" >> $GITHUB_OUTPUT
-          cat ./chaiNNer/history.txt >> $GITHUB_OUTPUT
-          echo "${delimiter}" >> $GITHUB_OUTPUT
+          r=$(cat ./chaiNNer/history.txt)
+          r="${r//'%'/'%25'}"                               # Multiline escape sequences for %
+          r="${r//$'\n'/'%0A'}"                             # Multiline escape sequences for '\n'
+          r="${r//$'\r'/'%0D'}"                             # Multiline escape sequences for '\r'
+          echo "RELEASE_BODY=$r" >> $GITHUB_OUTPUT
       - name: Create release
         uses: actions/create-release@v1
         env:
