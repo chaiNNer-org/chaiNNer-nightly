@@ -73,15 +73,13 @@ jobs:
           cd ./chaiNNer
           echo "Built on ${{ steps.current-time.outputs.formattedTime }}" > history.txt
           git log --no-merges HEAD  --not $(git rev-list -n1 --before='24 hours' --first-parent HEAD) --pretty=format:"[%h](https://github.com/chaiNNer-org/chaiNNer/commit/%H) - %s (%cr) <%an>" >> history.txt
-      - name: Read release.md and use it as a body of new release
+      - name: Prepare release body
         id: read_release
         shell: bash
         run: |
-          r=$(cat ./chaiNNer/history.txt)
-          r="${r//'%'/'%25'}"                               # Multiline escape sequences for %
-          r="${r//$'\n'/'%0A'}"                             # Multiline escape sequences for '\n'
-          r="${r//$'\r'/'%0D'}"                             # Multiline escape sequences for '\r'
-          echo "RELEASE_BODY=$r" >> $GITHUB_OUTPUT
+          # Copy the history file to a location that can be used by the release step
+          cp ./chaiNNer/history.txt ./release_body.txt
+          echo "RELEASE_BODY_FILE=./release_body.txt" >> $GITHUB_OUTPUT
       - name: Create release
         uses: actions/create-release@v1
         env:
@@ -89,8 +87,7 @@ jobs:
         with:
           tag_name: ${{ steps.current-time.outputs.formattedTime }}
           release_name: Nightly builds from ${{ steps.current-time.outputs.formattedTime }}
-          body: |
-            ${{ steps.read_release.outputs.RELEASE_BODY }}
+          body_file: ${{ steps.read_release.outputs.RELEASE_BODY_FILE }}
           draft: false
           prerelease: false
 
