@@ -47,7 +47,7 @@ jobs:
 
     strategy:
       matrix:
-        os: [macos-13, ubuntu-latest, windows-latest]
+        os: [macos-15, ubuntu-latest, windows-latest]
 
     steps:
       - name: Get current time
@@ -65,7 +65,7 @@ jobs:
         with:
           node-version: 16
       - name: install setuptools (macos)
-        if: matrix.os == 'macos-13'
+        if: matrix.os == 'macos-15'
         run: python3 -m pip install setuptools
       - name: Install dependencies
         run: cd ./chaiNNer && npm ci --force
@@ -81,7 +81,7 @@ jobs:
           PKG_VERSION=$(npm pkg get version --workspaces=false | tr -d \")-nightly.${{ steps.current-time.outputs.formattedTime }}
           npm version $PKG_VERSION --no-git-tag-version
       # - name: macOS certificate
-      #   if: matrix.os == 'macos-13'
+      #   if: matrix.os == 'macos-15'
       #   env:
       #     APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
       #     APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
@@ -104,7 +104,7 @@ jobs:
         shell: bash
         run: |
           cd ./chaiNNer
-          if [[ "${{ matrix.os }}" != "macos-13" ]]; then
+          if [[ "${{ matrix.os }}" != "macos-15" ]]; then
               npm run make -- --no-sign
           else
               npm run make -- --arch=universal --no-sign
