@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
     inputs:
       force:
-        description: "Build even if chaiNNer main has no commits in the last 24 hours"
+        description: "Build even if chaiNNer main has no commits since the last nightly"
         type: boolean
         default: false
 
@@ -27,33 +27,44 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: gh api -X PUT "repos/${{ github.repository }}/actions/workflows/release.yml/enable"
 
+  # Decides whether to build, and pins the chaiNNer commit and date every
+  # build job uses, so a commit landing mid-run or a run crossing midnight
+  # can't split one nightly across two versions.
   setup:
     permissions:
       contents: read
     runs-on: ubuntu-latest
     outputs:
-      COMMITS: ${{ steps.get_commits.outputs.COMMITS }}
+      build: ${{ steps.notes.outputs.changed == 'true' || inputs.force == true }}
+      head: ${{ steps.notes.outputs.head }}
+      tag: ${{ steps.date.outputs.tag }}
+      notes: ${{ steps.notes.outputs.notes }}
     steps:
-      - name: Checkout main
+      - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Checkout submodules
+      - name: Checkout chaiNNer main
         run: git submodule update --init --recursive --remote
-      - name: Get commits last 24 hours
-        id: get_commits
+      - name: Date
+        id: date
+        run: echo "tag=$(date -u +%F)" >> "$GITHUB_OUTPUT"
+      - name: Changelog since the last nightly
+        id: notes
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          if [[ "${{ inputs.force }}" == "true" ]]; then
-            echo "COMMITS=forced" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-          cd ./chaiNNer
-          commits=$(git rev-list --no-merges HEAD --not $(git rev-list -n1 --before="24 hours" --first-parent HEAD) | tr '\n' ' ')
-          echo "COMMITS=${commits}" >> "$GITHUB_OUTPUT"
+          bash .github/scripts/release-notes.sh ./chaiNNer "${{ github.repository }}" "${{ steps.date.outputs.tag }}" notes.md >> "$GITHUB_OUTPUT"
+          {
+            echo "notes<<NOTES_EOF"
+            cat notes.md
+            echo "NOTES_EOF"
+          } >> "$GITHUB_OUTPUT"
+          cat notes.md
 
   release:
     needs: [setup]
-    if: ${{ needs.setup.outputs.COMMITS }}
+    if: needs.setup.outputs.build == 'true'
     runs-on: ${{ matrix.os }}
     timeout-minutes: 60
     permissions:
@@ -64,18 +75,17 @@ jobs:
       matrix:
         os: [macos-15, ubuntu-latest, windows-latest]
 
+    env:
+      TAG: ${{ needs.setup.outputs.tag }}
+
     steps:
-      - name: Get current time
-        uses: josStorer/get-current-time@v2.0.1
-        id: current-time
-        with:
-          format: YYYY-MM-DD
-      - name: Checkout main
+      - name: Checkout
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - name: Checkout submodules
-        run: git submodule update --init --recursive --remote
+      - name: Checkout chaiNNer at the pinned commit
+        shell: bash
+        run: |
+          git submodule update --init --recursive --remote
+          git -C chaiNNer checkout --quiet "${{ needs.setup.outputs.head }}"
       # Same toolchain as chaiNNer's own release.yml and make.yml.
       - uses: actions/setup-node@v4
         with:
@@ -99,7 +109,7 @@ jobs:
         run: |
           cd ./chaiNNer
           npm version patch --no-git-tag-version
-          PKG_VERSION=$(npm pkg get version --workspaces=false | tr -d \")-nightly.${{ steps.current-time.outputs.formattedTime }}
+          PKG_VERSION=$(npm pkg get version --workspaces=false | tr -d \")-nightly.$TAG
           npm version $PKG_VERSION --no-git-tag-version
       - name: Build nightly release
         shell: bash
@@ -110,64 +120,58 @@ jobs:
           else
               npm run make -- --arch=universal --no-sign
           fi
-      - name: Set file name env vars
+      # Rename to chaiNNer-<os>-nightly.<date>.<ext>; .github/scripts/downloads.sh
+      # matches these names. The Squirrel .nupkg and its RELEASES index are
+      # updater files nothing uses here.
+      - name: Rename assets
         shell: bash
         run: |
-          echo "ZIP=$(find ./chaiNNer/out/make/ -iname '*.zip')" >> $GITHUB_ENV
-          echo "DMG=$(find ./chaiNNer/out/make/ -iname '*.dmg')" >> $GITHUB_ENV
-          echo "DEB=$(find ./chaiNNer/out/make/ -iname '*.deb')" >> $GITHUB_ENV
-          echo "RPM=$(find ./chaiNNer/out/make/ -iname '*.rpm')" >> $GITHUB_ENV
-          echo "EXE=$(find ./chaiNNer/out/make/ -iname '*.exe')" >> $GITHUB_ENV
-          echo "NUPKG=$(find ./chaiNNer/out/make/ -iname '*.nupkg')" >> $GITHUB_ENV
-      - name: Rename zip assets
-        if: ${{ env.ZIP }}
-        shell: bash
-        run: mv "${{ env.ZIP }}" "./chaiNNer/out/make/chaiNNer-${{ matrix.os }}-nightly.${{ steps.current-time.outputs.formattedTime }}.zip"
-      - name: Rename dmg assets
-        if: ${{ env.DMG }}
-        shell: bash
-        run: mv "${{ env.DMG }}" "./chaiNNer/out/make/chaiNNer-${{ matrix.os }}-nightly.${{ steps.current-time.outputs.formattedTime }}.dmg"
-      - name: Rename deb assets
-        if: ${{ env.DEB }}
-        shell: bash
-        run: mv "${{ env.DEB }}" "./chaiNNer/out/make/chaiNNer-${{ matrix.os }}-nightly.${{ steps.current-time.outputs.formattedTime }}.deb"
-      - name: Rename rpm assets
-        if: ${{ env.RPM }}
-        shell: bash
-        run: mv "${{ env.RPM }}" "./chaiNNer/out/make/chaiNNer-${{ matrix.os }}-nightly.${{ steps.current-time.outputs.formattedTime }}.rpm"
-      - name: Rename exe assets
-        if: ${{ env.EXE }}
-        shell: bash
-        run: mv "${{ env.EXE }}" "./chaiNNer/out/make/chaiNNer-${{ matrix.os }}-nightly.${{ steps.current-time.outputs.formattedTime }}.exe"
-      - name: Delete nupkg assets
-        if: ${{ env.NUPKG }}
-        shell: bash
-        run: rm "${{ env.NUPKG }}"
-      - name: Get commit history (past 24 hours)
-        shell: bash
-        run: |
-          cd ./chaiNNer
-          echo "Built on ${{ steps.current-time.outputs.formattedTime }}" > history.txt
-          git log --no-merges HEAD --not $(git rev-list -n1 --before="24 hours" --first-parent HEAD) --pretty=format:"[%h](https://github.com/chaiNNer-org/chaiNNer/commit/%H) - %s (%cr) <%an>" >> history.txt
-      - name: Read history.txt as the release body
-        id: read_release
-        shell: bash
-        run: |
-          {
-            echo "RELEASE_BODY<<HISTORY_EOF"
-            cat ./chaiNNer/history.txt
-            echo
-            echo "HISTORY_EOF"
-          } >> "$GITHUB_OUTPUT"
-      - name: Upload new release assets
+          cd ./chaiNNer/out/make
+          find . -iname '*.nupkg' -delete
+          find . -name RELEASES -delete
+          for ext in zip dmg deb rpm exe; do
+            f="$(find . -iname "*.$ext" | head -n 1)"
+            if [ -n "$f" ]; then
+              mv "$f" "./chaiNNer-${{ matrix.os }}-nightly.$TAG.$ext"
+            fi
+          done
+          ls -la
+      - name: Upload release assets
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file_glob: true
-          file: ./chaiNNer/out/make/**
-          tag: ${{ steps.current-time.outputs.formattedTime }}
+          file: ./chaiNNer/out/make/chaiNNer-*-nightly.*
+          tag: ${{ env.TAG }}
           overwrite: true
-          body: |
-            ${{ steps.read_release.outputs.RELEASE_BODY }}
-          release_name: Nightly builds from ${{ steps.current-time.outputs.formattedTime }}
+          body: ${{ needs.setup.outputs.notes }}
+          release_name: Nightly builds from ${{ env.TAG }}
           prerelease: false
+
+  # Adds a downloads table listing what actually uploaded, so a failed
+  # platform shows as failed instead of a dead link.
+  finalize:
+    needs: [setup, release]
+    if: always() && needs.setup.outputs.build == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Add downloads to the release notes
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ needs.setup.outputs.tag }}
+          NOTES: ${{ needs.setup.outputs.notes }}
+        run: |
+          if ! gh release view "$TAG" -R "${{ github.repository }}" > /dev/null 2>&1; then
+            echo "No release $TAG: every build failed."
+            exit 1
+          fi
+          {
+            printf '%s\n\n' "$NOTES"
+            bash .github/scripts/downloads.sh "${{ github.repository }}" "$TAG"
+          } > notes.md
+          cat notes.md
+          gh release edit "$TAG" -R "${{ github.repository }}" --notes-file notes.md
