@@ -11,6 +11,11 @@ on:
         type: boolean
         default: false
 
+# Two overlapping runs would pick the same tag before either has a release.
+concurrency:
+  group: release
+  cancel-in-progress: false
+
 jobs:
   # GitHub disables scheduled workflows after 60 days without activity in
   # this repo, which gets no commits of its own. Re-enabling through the API
@@ -27,7 +32,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: gh api -X PUT "repos/${{ github.repository }}/actions/workflows/release.yml/enable"
 
-  # Decides whether to build, and pins the chaiNNer commit and date every
+  # Decides whether to build, and pins the chaiNNer commit and tag every
   # build job uses, so a commit landing mid-run or a run crossing midnight
   # can't split one nightly across two versions.
   setup:
@@ -37,7 +42,7 @@ jobs:
     outputs:
       build: ${{ steps.notes.outputs.changed == 'true' || inputs.force == true }}
       head: ${{ steps.notes.outputs.head }}
-      tag: ${{ steps.date.outputs.tag }}
+      tag: ${{ steps.tag.outputs.tag }}
       notes: ${{ steps.notes.outputs.notes }}
     steps:
       - name: Checkout
@@ -46,15 +51,21 @@ jobs:
           fetch-depth: 0
       - name: Checkout chaiNNer main
         run: git submodule update --init --recursive --remote
-      - name: Date
-        id: date
-        run: echo "tag=$(date -u +%F)" >> "$GITHUB_OUTPUT"
+      # A second run on the same day gets <date>.2 instead of overwriting
+      # the first run's release.
+      - name: Tag
+        id: tag
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          tag="$(bash .github/scripts/next-tag.sh "${{ github.repository }}" "$(date -u +%F)")"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
       - name: Changelog since the last nightly
         id: notes
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          bash .github/scripts/release-notes.sh ./chaiNNer "${{ github.repository }}" "${{ steps.date.outputs.tag }}" notes.md >> "$GITHUB_OUTPUT"
+          bash .github/scripts/release-notes.sh ./chaiNNer "${{ github.repository }}" "${{ steps.tag.outputs.tag }}" notes.md >> "$GITHUB_OUTPUT"
           {
             echo "notes<<NOTES_EOF"
             cat notes.md
@@ -120,7 +131,7 @@ jobs:
           else
               npm run make -- --arch=universal --no-sign
           fi
-      # Rename to chaiNNer-<os>-nightly.<date>.<ext>; .github/scripts/downloads.sh
+      # Rename to chaiNNer-<os>-nightly.<tag>.<ext>; .github/scripts/downloads.sh
       # matches these names. The Squirrel .nupkg and its RELEASES index are
       # updater files nothing uses here.
       - name: Rename assets
